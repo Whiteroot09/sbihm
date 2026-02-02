@@ -343,6 +343,11 @@
             .report-output {
                 font-size: 11px;
             }
+
+            footer {
+                font-size: 13px !important;
+                padding: 15px 10px !important;
+            }
         }
 
         /* Touch-friendly improvements */
@@ -426,6 +431,10 @@
         </div>
     </div>
 
+    <footer style="text-align: center; padding: 20px; color: white; font-size: 14px; margin-top: 20px;">
+        Designed with <span style="color: #ff6b6b; font-size: 16px;">❤️</span> by <strong>Tasir</strong>
+    </footer>
+
     <div class="copy-notification" id="copyNotification">
         ✓ Report copied to clipboard!
     </div>
@@ -447,24 +456,44 @@
         function setValidDate() {
             const dateInput = document.getElementById('reportDate');
             const validDate = getNextValidDate();
-            dateInput.valueAsDate = validDate;
+            
+            // Format date as YYYY-MM-DD for input
+            const year = validDate.getFullYear();
+            const month = String(validDate.getMonth() + 1).padStart(2, '0');
+            const day = String(validDate.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            
+            dateInput.value = formattedDate;
         }
 
         // Initialize date on load
         setValidDate();
 
-        // Update date automatically every day at midnight
-        setInterval(() => {
+        // Update date automatically at midnight and check every hour
+        function checkAndUpdateDate() {
             setValidDate();
-        }, 60000); // Check every minute
+        }
+
+        // Check every hour if date needs updating
+        setInterval(checkAndUpdateDate, 3600000); // 1 hour in milliseconds
+
+        // Also check when page becomes visible again (user returns to tab)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                checkAndUpdateDate();
+            }
+        });
 
         // Prevent selecting Sundays
         document.getElementById('reportDate').addEventListener('change', function() {
-            const selectedDate = new Date(this.value);
+            const selectedDate = new Date(this.value + 'T00:00:00');
             if (selectedDate.getDay() === 0) {
                 alert('Sundays are not allowed! Moving to Monday.');
                 selectedDate.setDate(selectedDate.getDate() + 1);
-                this.valueAsDate = selectedDate;
+                const year = selectedDate.getFullYear();
+                const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                const day = String(selectedDate.getDate()).padStart(2, '0');
+                this.value = `${year}-${month}-${day}`;
             }
         });
 
