@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Class Report Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            color-scheme: light;
+            --bg: #f6f7fb;
+            --surface: #ffffff;
+            --surface-soft: #eef2ff;
+            --text: #0f172a;
+            --muted: #475569;
+            --border: rgba(148, 163, 184, 0.45);
+            --primary: #4f46e5;
+            --primary-strong: #4338ca;
+            --accent: #06b6d4;
+            --bg-glow-1: rgba(79, 70, 229, 0.14);
+            --bg-glow-2: rgba(6, 182, 212, 0.16);
+            --bg-grid: rgba(15, 23, 42, 0.08);
+            --shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+            --glow: 0 0 0 1px rgba(79, 70, 229, 0.18), 0 16px 36px rgba(15, 23, 42, 0.16);
+        }
+
+        body {
+            font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(520px circle at 12% 10%, var(--bg-glow-1), transparent 60%),
+                radial-gradient(520px circle at 88% 20%, var(--bg-glow-2), transparent 60%),
+                linear-gradient(var(--bg-grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+            background-size: auto, auto, 40px 40px, 40px 40px;
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, var(--surface), var(--surface-soft));
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(167, 139, 250, 0.22));
+            color: var(--text);
+            padding: 28px 30px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: clamp(22px, 3.4vw, 32px);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+
+        .content {
+            padding: 28px 30px 32px;
+        }
+
+        .class-entry {
+            background: var(--surface-soft);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: var(--glow);
+        }
+
+        .class-entry h3 {
+            color: var(--text);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        input, select, textarea {
+            padding: 11px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            background: #ffffff;
+            color: var(--text);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        select option {
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(0) brightness(0.2) contrast(1.4);
+            opacity: 1;
+        }
+
+        input[type="date"],
+        input[type="time"] {
+            color-scheme: light;
+        }
+
+        @supports (-moz-appearance: none) {
+            input[type="date"],
+            input[type="time"] {
+                color-scheme: light;
+                background-color: #ffffff;
+            }
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: rgba(71, 85, 105, 0.75);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(120deg, var(--primary), var(--accent));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 18px rgba(56, 189, 248, 0.25);
+        }
+
+        .btn-success {
+            background: linear-gradient(120deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: linear-gradient(120deg, #ef4444, #dc2626);
+            color: white;
+            padding: 8px 14px;
+            font-size: 12px;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.25);
+            color: var(--text);
+            border: 1px solid var(--border);
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.4);
+        }
+
+        .preset-btn {
+            font-size: 12px !important;
+            padding: 10px !important;
+            width: auto !important;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .output-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+        }
+
+        .output-section h2 {
+            color: var(--text);
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .report-output {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            white-space: pre-wrap;
+            font-family: "JetBrains Mono", "Consolas", monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .copy-notification {
+            display: none;
+            background: linear-gradient(120deg, #22c55e, #16a34a);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #ffffff;
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .back-link:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--glow);
+        }
+
+
+        .preset-panel {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .preset-panel h3 {
+            color: var(--text);
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .preset-panel select {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .page-footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text);
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .page-footer a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .page-footer a:visited {
+            color: inherit;
+        }
+
+        .footer-heart {
+            color: #ff6b6b;
+            font-size: 16px;
+        }
+
+        .copy-notification.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .date-input {
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .container {
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .header p {
+                font-size: 13px;
+            }
+
+            .content {
+                padding: 18px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .class-entry {
+                padding: 15px;
+            }
+
+            .class-entry h3 {
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+
+            .btn-danger {
+                position: static;
+                margin-top: 10px;
+                width: 100%;
+            }
+
+            input, select, textarea {
+                font-size: 16px; /* Prevents zoom on iOS */
+                padding: 12px;
+            }
+
+            .btn:not(.preset-btn) {
+                padding: 14px 20px;
+                font-size: 15px;
+                width: 100%;
+            }
+
+            .preset-btn {
+                font-size: 11px !important;
+                padding: 10px 8px !important;
+                width: auto !important;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn-secondary {
+                margin-left: 0;
+            }
+
+            .output-section h2 {
+                font-size: 18px;
+            }
+
+            .report-output {
+                font-size: 12px;
+                padding: 15px;
+                max-height: 300px;
+            }
+
+            .copy-notification {
+                right: 10px;
+                top: 10px;
+                font-size: 14px;
+            }
+
+            .date-input {
+                margin-bottom: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .content {
+                padding: 12px;
+            }
+
+            .class-entry {
+                padding: 12px;
+            }
+
+            label {
+                font-size: 13px;
+            }
+
+            .btn:not(.preset-btn) {
+                font-size: 14px;
+                padding: 12px 16px;
+            }
+
+            .preset-btn {
+                font-size: 10px !important;
+                padding: 8px 6px !important;
+            }
+
+            .report-output {
+                font-size: 11px;
+            }
+
+            footer {
+                font-size: 13px !important;
+                padding: 15px 10px !important;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .btn:not(.preset-btn) {
+                min-height: 44px; /* Apple's recommended touch target size */
+            }
+
+            .preset-btn {
+                min-height: 38px;
+            }
+
+            input, select {
+                min-height: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Class Report Generator</h1>
+            <p>Generate WhatsApp-ready class reports instantly</p>
+        </div>
+
+        <div class="content">
+            <div class="date-input">
+                <div class="form-group">
+                    <label for="reportDate">Report Date (Sundays Auto-Skipped):</label>
+                    <input type="date" id="reportDate" value="">
+                </div>
+            </div>
+
+            <div class="preset-panel">
+                <h3>⚡ Quick Add Presets</h3>
+                
+                <div style="margin-bottom: 15px;">
+                    <label>Select Faculty:</label>
+                    <select id="facultySelector">
+                        <option value="" selected disabled>Select faculty</option>
+                        <option value="Tasir Ahhamed Laskar">Tasir Ahhamed Laskar</option>
+                        <option value="Kirtika Ghosh">Kirtika Ghosh</option>
+                        <option value="Chayanika Das">Chayanika Das</option>
+                        <option value="Shraboni Ray Ganguly">Shraboni Ray Ganguly</option>
+                        <option value="Sohini Dey">Sohini Dey</option>
+                        <option value="Mohua Dutta">Mohua Dutta</option>
+                        <!-- <option value="Chayanika Das">Chayanika Das</option>
+                        <option value="Chayanika Das">Chayanika Das</option>
+                        <option value="Chayanika Das">Chayanika Das</option>
+                        <option value="Chayanika Das">Chayanika Das</option> -->
+                    </select>
+                </div>
+
+                <div>
+                    <label>Quick Add Course:</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px;">
+                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('ALL HOTEL+BTTM')">ALL HOTEL+BTTM</button>
+                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('ALL HOTEL')">ALL HOTEL</button>
+                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('BTTM')">BTTM</button>
+                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('BHHA')">BHHA</button>
+                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('MHM')">MHM</button>
+                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('BBA')">BBA</button>
+                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('BCA')">BCA</button>
+                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('MBA HC')">MBA HC</button>
+                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('MBA HC (ONLINE)')">MBA HC (ONLINE)</button>
+                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('DHO (ONLINE)')">DHO (ONLINE)</button>
+                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('BHM HOSPITAL')">BHM HOSPITAL</button>
+                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('DHM')">DHM</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="classesContainer"></div>
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="addClassEntry()">➕ Add Class</button>
+                <button class="btn btn-success" onclick="generateAndShare()">🚀 Generate & Share on WhatsApp</button>
+                <button class="btn btn-secondary" onclick="clearAll()">🗑️ Clear All</button>
+                <a href="Index.html" class="back-link">← Back to Home</a>
+            </div>
+
+            <div class="output-section" id="outputSection" style="display: none;">
+                <h2>Generated Report:</h2>
+                <div class="report-output" id="reportOutput"></div>
+                <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-success" onclick="shareOnWhatsApp()">💬 Share on WhatsApp</button>
+                    <button class="btn btn-primary" onclick="copyReport()">📋 Copy to Clipboard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="page-footer">
+        Designed with <span class="footer-heart">❤️</span> by <strong><a href="https://tasir.me/">Tasir</a></strong>
+    </footer>
+
+    <div class="copy-notification" id="copyNotification">
+        ✓ Report copied to clipboard!
+    </div>
+
+    <script>
+        // Disable Developer Tools
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+                (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+                (e.ctrlKey && e.key === 'u')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Detect DevTools
+        const devtools = /./;
+        devtools.toString = function() {
+            this.opened = true;
+        }
+        
+        setInterval(function() {
+            if (devtools.opened) {
+                window.location.reload();
+            }
+            devtools.opened = false;
+        }, 1000);
+
+        let classCount = 0;
+
+        // Function to get next valid date (skip Sundays)
+        function getNextValidDate() {
+            let date = new Date();
+            // If today is Sunday (0), move to Monday
+            if (date.getDay() === 0) {
+                date.setDate(date.getDate() + 1);
+            }
+            return date;
+        }
+
+        // Set date and skip Sundays
+        function setValidDate() {
+            const dateInput = document.getElementById('reportDate');
+            const validDate = getNextValidDate();
+            
+            // Format date as YYYY-MM-DD for input
+            const year = validDate.getFullYear();
+            const month = String(validDate.getMonth() + 1).padStart(2, '0');
+            const day = String(validDate.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            
+            dateInput.value = formattedDate;
+        }
+
+        // Initialize date on load
+        setValidDate();
+
+        // Update date automatically at midnight and check every hour
+        function checkAndUpdateDate() {
+            setValidDate();
+        }
+
+        // Check every hour if date needs updating
+        setInterval(checkAndUpdateDate, 3600000); // 1 hour in milliseconds
+
+        // Also check when page becomes visible again (user returns to tab)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                checkAndUpdateDate();
+            }
+        });
+
+        // Prevent selecting Sundays
+        document.getElementById('reportDate').addEventListener('change', function() {
+            const selectedDate = new Date(this.value + 'T00:00:00');
+            if (selectedDate.getDay() === 0) {
+                alert('Sundays are not allowed! Moving to Monday.');
+                selectedDate.setDate(selectedDate.getDate() + 1);
+                const year = selectedDate.getFullYear();
+                const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                const day = String(selectedDate.getDate()).padStart(2, '0');
+                this.value = `${year}-${month}-${day}`;
+            }
+        });
+
+        const facultySelector = document.getElementById('facultySelector');
+
+        facultySelector.addEventListener('change', function() {
+            const selectedFaculty = facultySelector.value;
+            document.querySelectorAll('.faculty').forEach((input) => {
+                input.value = selectedFaculty;
+            });
+        });
+
+        function addClassEntry(course = '', subject = '') {
+            classCount++;
+            const container = document.getElementById('classesContainer');
+            
+            // Get selected faculty from dropdown
+            const selectedFaculty = facultySelector.value || '';
+            
+            const classDiv = document.createElement('div');
+            classDiv.className = 'class-entry';
+            classDiv.id = `class-${classCount}`;
+            
+            classDiv.innerHTML = `
+                <h3>Class ${classCount}</h3>
+                <button class="btn btn-danger" onclick="removeClass(${classCount})">✕ Remove</button>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Time:</label>
+                        <input type="time" class="start-time" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Time:</label>
+                        <input type="time" class="end-time" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Course:</label>
+                        <input type="text" class="course" placeholder="e.g., MBA HC" value="${course}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Subject:</label>
+                        <input type="text" class="subject" placeholder="e.g., IT" value="${subject}" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Topic:</label>
+                        <input type="text" class="topic" placeholder="e.g., SQL" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Students Present:</label>
+                        <input type="number" class="students" min="0" placeholder="e.g., 8" required>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Faculty:</label>
+                    <input type="text" class="faculty" placeholder="e.g., Tasir Ahhamed Laskar" value="${selectedFaculty}" required>
+                </div>
+            `;
+            
+            container.appendChild(classDiv);
+            
+            // Scroll to new entry
+            classDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function addPresetClass(course) {
+            addClassEntry(course, '');
+            
+            // Show quick notification
+            const notification = document.getElementById('copyNotification');
+            notification.textContent = `✓ ${course} added!`;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 1500);
+        }
+
+        function removeClass(id) {
+            const element = document.getElementById(`class-${id}`);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        function calculateDuration(startTime, endTime) {
+            const start = new Date(`2000/01/01 ${startTime}`);
+            const end = new Date(`2000/01/01 ${endTime}`);
+            const diff = (end - start) / 1000 / 60; // difference in minutes
+            return Math.round(diff);
+        }
+
+        function formatTime(time24) {
+            const [hours, minutes] = time24.split(':');
+            let h = parseInt(hours);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            return `${h}.${minutes}`;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = String(date.getFullYear()).slice(-2);
+            return `${day}/${month}/${year}`;
+        }
+
+        function generateReport() {
+            const classes = document.querySelectorAll('.class-entry');
+            
+            if (classes.length === 0) {
+                alert('Please add at least one class entry!');
+                return false;
+            }
+
+            const reportDate = document.getElementById('reportDate').value;
+            if (!reportDate) {
+                alert('Please select a report date!');
+                return false;
+            }
+
+            let report = `Class report for On campus on ${formatDate(reportDate)}\n`;
+            report += '________________________________\n';
+
+            let allFieldsFilled = true;
+
+            classes.forEach((classEntry, index) => {
+                const startTime = classEntry.querySelector('.start-time').value;
+                const endTime = classEntry.querySelector('.end-time').value;
+                const course = classEntry.querySelector('.course').value;
+                const subject = classEntry.querySelector('.subject').value;
+                const topic = classEntry.querySelector('.topic').value;
+                const students = classEntry.querySelector('.students').value;
+                const faculty = classEntry.querySelector('.faculty').value;
+
+                if (!startTime || !endTime || !course || !subject || !topic || !students || !faculty) {
+                    alert(`Please fill in all fields for Class ${index + 1}!`);
+                    allFieldsFilled = false;
+                    return;
+                }
+
+                const duration = calculateDuration(startTime, endTime);
+                
+                report += `Time: ${formatTime(startTime)}- ${formatTime(endTime)}\n`;
+                report += `Duration: ${duration} mins\n`;
+                report += `Course: ${course}\n`;
+                report += `Subject: ${subject}\n`;
+                report += `Topic: ${topic}\n`;
+                report += `Faculty: ${faculty}\n`;
+                report += `Students Present: ${students}\n`;
+                report += '_____________________________\n';
+            });
+
+            if (!allFieldsFilled) {
+                return false;
+            }
+
+            document.getElementById('reportOutput').textContent = report;
+            document.getElementById('outputSection').style.display = 'block';
+            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+            return report;
+        }
+
+        function generateAndShare() {
+            const report = generateReport();
+            if (report) {
+                shareOnWhatsApp();
+            }
+        }
+
+        function shareOnWhatsApp() {
+            const reportText = document.getElementById('reportOutput').textContent;
+            if (!reportText) {
+                alert('Please generate a report first!');
+                return;
+            }
+
+            // Encode the text for URL
+            const encodedText = encodeURIComponent(reportText);
+            
+            // Detect device type more accurately
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isTablet = /iPad|Android(?!.*Mobile)/i.test(navigator.userAgent);
+            const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+            
+            // Determine which WhatsApp to open
+            let whatsappUrl;
+            
+            if (isMobile && !isTablet) {
+                // Mobile phone - open WhatsApp app
+                whatsappUrl = `whatsapp://send?text=${encodedText}`;
+                
+                // Try to open app, fallback to web after timeout
+                window.location.href = whatsappUrl;
+                
+                // Fallback to web WhatsApp if app doesn't open
+                setTimeout(() => {
+                    if (document.hidden === false) {
+                        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
+                    }
+                }, 1500);
+            } else {
+                // Desktop/Laptop/Tablet - open WhatsApp Web
+                whatsappUrl = `https://web.whatsapp.com/send?text=${encodedText}`;
+                window.open(whatsappUrl, '_blank');
+            }
+            
+            // Show confirmation
+            const notification = document.getElementById('copyNotification');
+            notification.textContent = isMobile && !isTablet ? '✓ Opening WhatsApp App...' : '✓ Opening WhatsApp Web...';
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2500);
+        }
+
+        function copyReport() {
+            const reportText = document.getElementById('reportOutput').textContent;
+            navigator.clipboard.writeText(reportText).then(() => {
+                const notification = document.getElementById('copyNotification');
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }).catch(err => {
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure you want to clear all classes?')) {
+                document.getElementById('classesContainer').innerHTML = '';
+                document.getElementById('outputSection').style.display = 'none';
+                classCount = 0;
+            }
+        }
+
+        // No preset class on initial load
+    </script>
+</body>
+</html>

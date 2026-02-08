@@ -1,0 +1,1413 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Attendance Manager – Multi-Year System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f5f7fb;
+      --bg-2:#eef3ff;
+      --card:#ffffff;
+      --surface:#f8fafc;
+      --surface-2:#f1f5ff;
+      --ink:#0b1220;
+      --muted:#556070;
+      --accent:#0f62fe;
+      --accent-2:#14b8a6;
+      --danger:#e11d48;
+      --line:#e3e8f2;
+      --glow:0 0 20px rgba(15,98,254,0.15);
+      --shadow:0 20px 50px rgba(15,23,42,0.08);
+      --radius:16px;
+      --summary-start:rgba(15,98,254,0.08);
+      --summary-end:rgba(20,184,166,0.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:"Space Grotesk",ui-sans-serif,"Segoe UI",Arial,sans-serif;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(15,98,254,0.14) 0%, transparent 60%),
+        radial-gradient(900px 420px at 90% 0%, rgba(20,184,166,0.16) 0%, transparent 55%),
+        radial-gradient(700px 300px at 20% 90%, rgba(255,184,0,0.14) 0%, transparent 55%),
+        linear-gradient(180deg,var(--bg),var(--bg-2));
+      margin:0;
+      padding:28px 18px 40px;
+      color:var(--ink);
+      min-height:100vh;
+    }
+    .wrap{max-width:1200px;margin:0 auto}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+    .header-center{flex:1;text-align:center}
+    h1{font-size:28px;margin:0;letter-spacing:0.2px}
+    h2{font-size:18px;margin:0 0 12px 0}
+    .card{
+      background:var(--card);
+      padding:18px;
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      margin-bottom:16px;
+      border:1px solid rgba(15,23,42,0.04);
+    }
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .row.tight{gap:6px}
+    input[type=text],input[type=date],textarea,select,input[type=file]{
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      font-size:14px;
+      background:var(--card);
+      color:var(--ink);
+    }
+    input[type=text]:focus,input[type=date]:focus,textarea:focus,select:focus,input[type=file]:focus{
+      outline:2px solid rgba(15,98,254,0.2);
+      border-color:rgba(15,98,254,0.6);
+      box-shadow:var(--glow);
+    }
+    textarea{width:100%;height:120px;font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;resize:vertical}
+    button{
+      background:linear-gradient(135deg,var(--accent),#3b82f6);
+      color:#ffffff;
+      padding:9px 14px;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      font-size:14px;
+      font-weight:600;
+      transition:transform 0.15s ease,opacity 0.2s ease,box-shadow 0.2s ease;
+      box-shadow:0 10px 24px rgba(15,98,254,0.22);
+    }
+    button:hover{opacity:0.95;transform:translateY(-1px)}
+    button.ghost{
+      background:transparent;
+      color:var(--ink);
+      border:1px solid rgba(15,23,42,0.12);
+      box-shadow:none;
+    }
+    button.ghost:hover{background:rgba(15,23,42,0.04)}
+    button.danger{background:linear-gradient(135deg,#fb7185,var(--danger));color:#ffffff}
+    button:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
+    .students{max-height:520px;overflow:auto;margin-top:10px}
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
+    th{background:var(--surface);position:sticky;top:0;z-index:10;font-weight:600;color:var(--ink)}
+    .muted{color:var(--muted)}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    .controls.compact button{padding:8px 12px;font-size:13px}
+    .notice{padding:12px;border-radius:10px;background:#fff8e6;color:#6a4b00;border:1px solid #ffe8a8;margin-bottom:12px}
+    .small{font-size:13px}
+    .year-tabs{display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--line);overflow-x:auto}
+    .year-tab{
+      padding:10px 20px;
+      cursor:pointer;
+      border:none;
+      background:transparent;
+      font-size:15px;
+      color:var(--muted);
+      border-bottom:3px solid transparent;
+      transition:all 0.2s;
+      white-space:nowrap;
+    }
+    .year-tab.active{color:var(--ink);border-bottom-color:var(--accent);font-weight:600;box-shadow:none}
+    .year-tab:hover{color:var(--ink);background:rgba(15,98,254,0.08)}
+    .course-list{display:flex;flex-direction:column;gap:12px}
+    details.course{
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--card);
+      overflow:hidden;
+    }
+    details.course[open]{box-shadow:0 12px 30px rgba(12,16,25,0.08)}
+    summary.course-summary{
+      list-style:none;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      font-weight:600;
+      color:var(--ink);
+      background:linear-gradient(90deg, var(--summary-start), var(--summary-end));
+    }
+    summary.course-summary::-webkit-details-marker{display:none}
+    .course-meta{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;font-weight:500}
+    .course-pill{padding:4px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--ink)}
+    .course-count{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+    .course-count .course-pill{font-weight:600}
+    .course-actions{display:inline-flex;align-items:center;gap:6px;margin-left:8px}
+    .course-actions button{padding:6px 10px;font-size:12px}
+    .course-summary-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .course-summary-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .summary-pills{display:flex;gap:8px;flex-wrap:wrap}
+    .summary-pills strong{font-weight:700}
+    .course-body{padding:0 14px 12px}
+      .students input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+    .footer{margin:28px 0 10px;text-align:center}
+    .footer p{color:var(--muted);font-size:14px;line-height:1.5}
+    .footer a{color:inherit;text-decoration:none}
+    .footer a:visited{color:inherit}
+    .footer a:hover{color:var(--ink)}
+    .footer .heart{color:#ef4444}
+    .whatsapp-btn{position:relative;display:inline-flex;align-items:center;gap:8px;overflow:hidden}
+    .whatsapp-btn::after{
+      content:"";
+      position:absolute;
+      inset:-30% 60% -30% -10%;
+      background:linear-gradient(120deg, transparent 0%, rgba(15,98,254,0.25) 45%, rgba(20,184,166,0.4) 55%, transparent 100%);
+      transform:translateX(-120%);
+      animation:whatsapp-sheen 2.6s ease-in-out infinite;
+      pointer-events:none;
+    }
+    .whatsapp-btn:hover{transform:translateY(-2px)}
+    .whatsapp-icon{display:inline-flex;align-items:center;justify-content:center;color:#1fa855}
+    @keyframes whatsapp-sheen{
+      0%{transform:translateX(-120%)}
+      60%{transform:translateX(120%)}
+      100%{transform:translateX(120%)}
+    }
+    .export-type{margin:12px 0}
+    .export-type label{display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px;border-radius:8px;transition:background 0.2s}
+    .export-type label:hover{background:rgba(15,98,254,0.06)}
+    .modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(8,12,22,0.45);z-index:1000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+    .modal.show{display:flex}
+    .modal-content{background:var(--card);padding:24px;border-radius:16px;max-width:600px;width:100%;max-height:90vh;overflow:auto;box-shadow:var(--shadow);border:1px solid var(--line)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .modal-header h2{margin:0}
+    .close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);padding:0;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .close-btn:hover{background:var(--surface-2)}
+    @media (max-width: 900px){
+      .controls{gap:6px}
+      .students{max-height:420px}
+      .card{padding:16px}
+      header{gap:8px}
+      .summary-pills{width:100%}
+    }
+    @media (max-width: 720px){
+      body{padding:22px 14px 32px}
+      header{gap:8px;flex-direction:column;align-items:flex-start}
+      h1{font-size:22px}
+      .row{flex-direction:column;align-items:flex-start}
+      .controls{width:100%}
+      .controls button{flex:1;min-width:120px}
+      .course-meta{display:none}
+      .students{max-height:360px}
+      th:nth-child(3),td:nth-child(3){display:none}
+      summary.course-summary{flex-direction:column;align-items:flex-start}
+      .course-actions{margin-left:0}
+    }
+    @media (max-width: 520px){
+      .year-tab{padding:8px 14px}
+      button{padding:8px 12px;font-size:13px}
+      input[type=text],input[type=date],textarea,select,input[type=file]{width:100%}
+      .controls button{flex:1 1 100%}
+      th:nth-child(1),td:nth-child(1){display:none}
+      .course-actions button{width:100%}
+      .summary-pills{flex-direction:column;align-items:flex-start}
+      .summary-pills .course-pill{width:100%}
+      .whatsapp-btn{width:100%;justify-content:center;font-size:14px;padding:10px 14px}
+    }
+    @media (max-width: 420px){
+      h1{font-size:20px}
+      h2{font-size:16px}
+      .card{padding:14px}
+      .students{max-height:320px}
+    }
+    @media (min-width: 1400px){
+      .wrap{max-width:1380px}
+      .students{max-height:620px}
+      h1{font-size:30px}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="header-center">
+      <h1>📋 Attendance Manager</h1>
+      <div class="muted small">Multi-Year System with Department Organization</div>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <label><strong>Date:</strong> <input type="date" id="datePicker"></label>
+        <label class="muted small">(Sundays automatically skipped)</label>
+      </div>
+      <div class="controls">
+        <button id="toggleSat" class="ghost">Toggle: Skip Saturdays</button>
+        <button id="clearDate" class="ghost">Clear Attendance</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="holidayNotice" class="notice" style="display:none"></div>
+
+  <div class="year-tabs" id="yearTabs"></div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:12px">
+      <h2>Students - <span id="currentYearDisplay">1st Year</span></h2>
+      <div class="summary-pills">
+        <span class="course-pill">Total Present: <strong id="totalPresentAll">0</strong></span>
+        <span class="course-pill">Total Absent: <strong id="totalAbsentAll">0</strong></span>
+      </div>
+    </div>
+
+    <div class="students card" id="studentsContainer">
+      <div class="muted" style="text-align:center;padding:20px">Loading...</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:12px">Export Attendance</h2>
+    <div class="export-type">
+      <label><input type="radio" name="exportType" value="present" checked> <span><strong>Present List</strong></span></label>
+    </div>
+    <div class="export-type">
+      <label><input type="radio" name="exportType" value="absent"> <span><strong>Absent List</strong></span></label>
+    </div>
+    <div class="controls" style="margin-top:16px">
+      <button id="copyToClipboard" class="ghost">📋 Copy</button>
+      <button id="shareWhatsApp" class="ghost whatsapp-btn">
+        <span class="whatsapp-icon" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="18" height="18" role="img" focusable="false">
+            <path fill="currentColor" d="M19.11 17.19c-.27-.14-1.6-.78-1.84-.87-.25-.09-.43-.14-.61.14-.18.27-.7.87-.86 1.05-.16.18-.32.2-.6.07-.27-.14-1.14-.42-2.18-1.34-.81-.73-1.35-1.63-1.51-1.9-.16-.27-.02-.42.12-.56.12-.12.27-.32.41-.48.14-.16.18-.27.27-.45.09-.18.04-.34-.02-.48-.07-.14-.61-1.48-.83-2.03-.22-.54-.44-.47-.61-.48l-.52-.01c-.18 0-.48.07-.73.34-.25.27-.96.94-.96 2.29 0 1.35.99 2.66 1.13 2.84.14.18 1.95 2.98 4.74 4.18.66.28 1.17.45 1.57.58.66.21 1.26.18 1.73.11.53-.08 1.6-.65 1.83-1.28.23-.63.23-1.17.16-1.28-.07-.11-.25-.18-.52-.32zM16.02 4.02c-6.6 0-11.96 5.36-11.96 11.96 0 2.11.55 4.1 1.51 5.82L4 28l6.36-1.68a11.9 11.9 0 0 0 5.66 1.44h.01c6.6 0 11.96-5.36 11.96-11.96 0-6.6-5.36-11.96-11.96-11.96zm0 21.92h-.01c-1.8 0-3.54-.48-5.06-1.4l-.36-.21-3.77.99 1-3.67-.24-.38a9.93 9.93 0 0 1-1.53-5.28c0-5.52 4.49-10.01 10.01-10.01 5.52 0 10.01 4.49 10.01 10.01 0 5.52-4.49 10.01-10.01 10.01z"/>
+          </svg>
+        </span>
+        <span>Share on WhatsApp</span>
+      </button>
+      <button id="backToLanding" class="ghost">← Back</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Designed with <span class="heart">❤️</span> by <strong><a href="https://tasir.me/">Tasir</a></strong></p>
+  </div>
+</div>
+
+<!-- Modals -->
+<div id="addModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Add Student</h2>
+      <button class="close-btn" onclick="closeModal('addModal')">&times;</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;margin-bottom:4px"><strong>Name:</strong></label>
+      <input type="text" id="newStudentName" style="width:100%" placeholder="Enter student name">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;margin-bottom:4px"><strong>Department:</strong></label>
+      <input type="text" id="newStudentDept" style="width:100%" placeholder="e.g., BCS, BHM">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;margin-bottom:4px"><strong>Roll (Optional):</strong></label>
+      <input type="text" id="newStudentRoll" style="width:100%" placeholder="Roll number">
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="display:block;margin-bottom:4px"><strong>Year:</strong></label>
+      <select id="newStudentYear" style="width:100%">
+        <option value="1">1st Year</option>
+        <option value="2">2nd Year</option>
+        <option value="3">3rd Year</option>
+        <option value="4">4th Year</option>
+      </select>
+    </div>
+    <div class="controls">
+      <button onclick="confirmAddStudent()">Add Student</button>
+      <button class="ghost" onclick="closeModal('addModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="importModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Import Students</h2>
+      <button class="close-btn" onclick="closeModal('importModal')">&times;</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;margin-bottom:4px"><strong>Year:</strong></label>
+      <select id="importYear" style="width:100%">
+        <option value="1">1st Year</option>
+        <option value="2">2nd Year</option>
+        <option value="3">3rd Year</option>
+        <option value="4">4th Year</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;margin-bottom:4px"><strong>Default Department (Optional):</strong></label>
+      <input type="text" id="importDept" style="width:100%" placeholder="If not in text">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;margin-bottom:8px"><strong>Upload File:</strong></label>
+      <input type="file" id="fileInput" accept=".txt" style="width:100%">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;margin-bottom:4px"><strong>OR Paste Text:</strong></label>
+      <textarea id="bulkInput" placeholder="Department Name:&#10;Student 1, Roll1&#10;Student 2"></textarea>
+    </div>
+    <div class="controls">
+      <button onclick="confirmImport()">Import</button>
+      <button class="ghost" onclick="closeModal('importModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="deleteModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Confirm Delete</h2>
+      <button class="close-btn" onclick="closeModal('deleteModal')">&times;</button>
+    </div>
+    <p id="deleteMessage"></p>
+    <div class="controls">
+      <button class="danger" onclick="deleteStudent()">Delete</button>
+      <button class="ghost" onclick="closeModal('deleteModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="embedModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Save Data to Code</h2>
+      <button class="close-btn" onclick="closeModal('embedModal')">&times;</button>
+    </div>
+    <p class="muted small">Copy this snippet and replace the existing EMBEDDED_DATA and EMBEDDED_ATTENDANCE in the code.</p>
+    <textarea id="embedOutput" readonly style="height:220px"></textarea>
+    <div class="controls" style="margin-top:12px">
+      <button id="copyEmbed">Copy Snippet</button>
+      <button class="ghost" onclick="closeModal('embedModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LS_ATT = 'att_records_v2';
+const LS_SKIP_SAT = 'att_skip_sat_v2';
+let currentYear = 1;
+let deleteTargetId = null;
+let deleteTargetCourse = null;
+
+// EDIT HERE: Hard-code course and student lists (used on every page load).
+const EMBEDDED_COURSES = {
+  1: ["BBA","BCA","BCS","BHHA","BHM HOTEL","BHM HOSPITAL","BTTM","DHM(HOSPITAL)","DIPLOMA ALL","MBA HC","MHM"],
+  2: ["BBA","BCA","BCS","BHHA","BHM HOTEL","BHM HOSPITAL","BTTM","DHM(HOSPITAL)","DIPLOMA ALL","MBA HC","MHM"],
+  3: ["BBA","BCA","BCS","BHHA","BHM HOTEL","BHM HOSPITAL","BTTM","DHM(HOSPITAL)","DIPLOMA ALL","MBA HC","MHM"],
+  4: ["BBA","BCA","BCS","BHHA","BHM HOTEL","BHM HOSPITAL","BTTM","DHM(HOSPITAL)","DIPLOMA ALL","MBA HC","MHM"]
+};
+
+const EMBEDDED_STUDENTS_BY_YEAR = {
+  // 1st Year Students (Edit as needed, maintain the same format as below)
+ 1:` BBA:
+   ARYAYESH DATTA
+   BIKRAMJIT MANNA
+   DIVYANKA
+   SIRAT ABIR
+   WRISHAV PAUL
+
+BCA:
+   KRISHNENDU BANIK
+   SANCHARI BANERJEE
+
+BCS:
+   ABHIJIT NASKAR
+   ABIR DAS
+   ALEKHYA DUTTA
+   ANUBHAB BANERJEE
+   ARSER KHAN
+   DIGANTA MITRA
+   PALASH JANA
+   RANIK MONDAL
+   RATUL MONDAL
+   RIK HOWLADER
+   SANTANU ROUT
+   SOMA BISWAS
+   SOUROKANTI MAJUMDER
+   SUBHA SARDAR
+   TRISHA GHOSH
+   TUNIR DAS
+
+BHHA:
+   ALEX SUBRATA GOMES
+   ANIK MURMU
+   ANKUR PURKAIT
+   ARIJIT GHOSH
+   ARITRA GHOSH
+   AYUSH BANERJEE
+   DEBANGSU GHOSH
+   DEBAYAN KARAN
+   DISHA DAS
+   KOYEL SAHA
+   KRISH MEUR
+   MADHUPRIYA BANRA
+   MD RIYAD ISLAM GAZI
+   MD SHOIB
+   MOHAK MAITY
+   NILADRI GHIOSH
+   PARI SETHIA
+   PRASIDHI PRABHAT
+   PRITAM GHOSH
+   PRIYANSHU ADHYA
+   RIHAN SARKAR
+   RINKI SAHA
+   ROHIT PAUL
+   SATYAKI TIA
+   SOHAM SEN
+   SAMADRITA BASU
+   SOUMI GHOSH
+   SRIJAN KUNDA DAS
+   SRIJITA ROY
+   SRIMANTA HALDER
+   SUDIPA MAITY
+   SUMAN ROY
+   SUBHAM DAS ADHIKARI
+   SUBHADIP NASKAR
+   SWASTIKA MONDAL
+   TAULIK PAUL
+   TOUFIK UMAR MOLLICK
+   TRIDIB MANDAL
+   SUBHRAJYOTI DAS
+   ARSHITA BISWAS
+
+BHM HOTEL:
+   AKASH SK
+   ANWESHA GIRI
+   ARSHITA BISWAS
+   BRISTI MAJUMDER
+   MD ABU SALEM
+   MOHAN BISWAS
+   NIRANJAN MURMU
+   SUMIT KARMAKAR
+   SURYADIP DUTTA
+   SWARNAVA MALAKAR
+
+BHM Hospital:
+   ANKITA BANERJEE
+   ANNYASHA SIL
+   ARCHAK BANERJEE
+   BHABNA PAL
+   KOUSHANI BHATTACHARYYA
+   MD TARIQ AZIZ
+   MD TAUFIKE
+   NEHANA KHATUN
+   NOOR HASAN
+   PIEU MONDAL
+   RAMIZ RAZA MONDAL
+   RAHUL SAHA
+   SATHI DAS
+   SAYAN DAS
+   SAYAN ROY
+   SHAHIDUL SEKH
+   SNEHA KUNDU
+   SUBHASMITA ROY
+   SUSMITA BHOWMIK
+   TIASA MAIRA
+
+BTTM:
+   ADREETO SAMARDAR
+   DEBASHISH BISWAS
+   NEHA KR YADAV
+   PREM SING KARJEE
+   SOHAM RANJAN ROY
+   SUMANA MONDAL
+
+DHM(HOSPITAL):
+   Ishita Chakraborty
+   Rohan Ghosh
+   Sarbani Chatterjee
+   Aatrayee Chakraborty
+
+Diploma  ALL:
+   Disha Acharya
+   Trisha Ghosh
+   Akash Pandit
+   Srija Mukherjee
+   Rohan Banik
+   Anisha Mondal
+   Rajeev Kumar Ray
+   Anima Mondal
+   Rajkumar Halder
+   Saikat Panda
+   Angshuman Mitra
+   Abhishek Mondal
+   Anuvab Hazra
+   Ranjan Das
+   Srijita Sur
+   Sourav Ghosh
+   Ayesha Jahangir
+   Anjali Maity
+   Tithi Sarkar
+   Vinayak Pathak
+   Shilpa Pandit
+   Dipti Parui
+   Subhrajyoti Sen
+   Nandimur Rahman
+   Akash Adhikary
+   Sani Bhunia
+   Praloy Manna
+
+MBA HC:
+   Chaitali Hazra
+   Suparna Hazra
+   Soumodipta Bhoewmick
+   Sweta Ganguly
+   Swarnava Paul
+   Anisha Ghosh
+   Aditi Ram
+   Somali Sinha
+   Indrajit Sarkar
+
+MHM:
+   ADRIJA BANERJEE
+   ARINDAM DOLAI
+   ASTIK KAYAL
+   DISHA MALLICK
+   KAVITA THAPA
+   KASHISH SEN
+   MIRJANULLAH RAJI
+   PALLABI GHOSH
+   PINKI DAS
+   PROGOTI DAS
+   RAJ SARKAR
+   RTRESHA MAL
+   SAGAR SATPATI
+   SHIVAM JHA
+   SOMDATTA CHAKRABORTY
+   SUBHAM SATAPATHI
+   SWETA MANDAL
+   TANMOY KAR
+   TOUSHIK SK`,
+
+// 2nd Year Students (Edit as needed, maintain the same format as above)
+2: `
+BBA:
+  APURBA MONDAL
+  BUSHRA KHATUN
+  JAYA KARMAKAR
+  MANASI HALDER
+  RITAM DAS
+  SAYANIKA SEN
+  SAYANTIKA SEN
+  SHOSHANIM DARNAL
+  SRIJONI CHATTERJEE
+  SUBHADIP BANERJEE
+  TANISHA SAHA
+BCA:
+  SABAB ALAM
+  SOUMIK GHOSH
+  SRISTHI CHATTERJEE
+BCS:
+  Aniruddha Mondal
+  Anubhab Naskar
+  Ayantika Ghash
+  Ayush sonar
+  Bappaditja Maity
+  Biki Mondal
+  Debangshu Patra
+  Dipraj Debpan
+  Jit Hazra
+  Kashish Grupta
+  Nandini Hazra
+  Oishik Dey
+  Piu Sutradhar
+  Prasun Roy
+  Romio Biswas
+  Samapti Das
+  Sandipan Bej
+  Shubhajit Das
+  Srinjani Dasgupta
+  Suman Mondal
+  Surajit Mondal
+  Suvam Datta
+  Tania Bahin
+  Tanmoy Som
+
+BFT:
+  Mahima Dey
+
+BHHA:
+  Abhay Jana
+  Abhik Kundu
+  Ahana Roy
+  Anirban Saha
+  Ankan Bhattachariee
+  Antar Purkait
+  Archismita Sana
+  Arijit Dhara
+  Arnava Mitra
+   Banya Kundu
+   Bidyut  Karmakar
+   Bikram Saha
+   Diptesh Hudait
+   Harshit Rai
+   Iman Biswas
+   Ipsita Das
+   Ipsita Mondal
+   Ishani Beswas
+   Jil Chakraborty
+   Jit Roy
+   Joydeep Mondal
+   Kaberi Dey
+   Kingshik Paul
+   Koushik Hazra
+   Madhuri Roy
+   Mainak Mukherjee
+   Meghna paul
+   Monali Santra
+   MS. Faizan Ansari
+   Oitri Ghosh
+   Prakriti Mondal
+   Priyanshu Show
+   Rahat Aman
+   Rahul Paul
+   Ranajit Singh
+   Rex Samanta
+   Richav Bhaltacharjee
+   Ritika Sana
+   Rohit Mukherjee
+   Rony Bala
+   Sagnik Halder
+   Sahali Mondal
+   Saheli Roy
+   Saheli Roy
+   Sayan Das
+   Sayantan Dam
+   Shivam Kumar Yadav
+   Shivangi Dey
+   Shyam Sundar Kadia
+   SK. Sarafat Ali
+   Som Sekhar Mondal
+   Soumajit Pahar
+   Soumi Das
+   Soumik Mukherjee
+   Sreemahie Mondal
+   Srijan MAjumder
+   Sucharita Murmu
+   Sudipta Bera
+   Sumit Poddar
+   Sutapa Mondal
+   Swarnali Jalui
+   Swarup  Hait
+
+BHM ( Hotel:
+   Abhay Dhara
+   Abhrojyoti Ghosh
+   Alamin eg
+   Aniruddha Karmakar
+   Argha- Patra
+   Arita Dey
+   Biswranjan Roul
+   Debayan Chakraborty
+   Dibyojyoti Barua
+   Divos Khadka
+   Manish Kumar Show
+   MD Sahir Sanfui
+   MD. Rehan Hussain
+   Piu Ghosh
+   Rohit Roy
+   Sakirul Molla
+   Sanajit Das
+   Shruti Manger
+   Sk. Afaz Ahammed
+   Sk• Muktar
+   Sohan Dutta
+   Swarna Saha
+   Swarnali Saha
+   Tanmay Roul
+   Vivek Mahmia
+
+BHM HOSPITAL:
+   Ananya Singha Roy
+   Anik Mondal
+   Anushka Das Barma
+   Arpan NASKAR
+   Ayan Roy
+   Bikram Das
+   Bishal Rabi das
+   Biswadip Ghosh
+   Chirashree Bera
+   Debojyoti Laha
+   Govinda Ghosh
+   Jeenia tikader
+   Jinnat Ara Khatun
+   Priyabrato Dutta
+   Rupsha Das
+   Sampada paul
+   Sk. Atik Israque
+   Sneha Aich
+   Sohini Ghosh
+   Soniya Karmakar
+   Sourav Das
+   Srijona Pramanik
+   Srirupa Dey
+   Subham sarkar
+   Suvam Chakraborty
+   Trisanjit Naskar
+   Atik Isaraque
+
+BTTM:
+   Abhranil Sasmal
+   Anivuddha Singha
+   Ankita Gharami
+   Atashi Mondal
+   Biku Mondal
+   Biswajeet Singh
+   Debasmita Sadhya
+   Koyel Karmakar
+   Koyel Roy Choudhury
+   Rakesh Paul
+   Souvik Adak
+   Subhabrala Dutta
+   Subhankar Santra
+   Suman Pradhan
+   Suvajit Jana
+
+MBA (HM:
+   Anushka Mondal
+   Joyaip Roy
+   Kanishka Roy
+   Koushambi Chakraborty
+   Prajatna Kar
+   Riya sarkar
+
+MBA (HR:
+   Debdipto Das
+
+MBA HC:
+   Joydip Roy
+   Keya Das
+   Nafisa Khalun
+   Pritha Bhoromik
+   Priti Chatterjee
+   Renali Guha
+   Rinku Sardar
+   Rohit Mondal
+   Roshni Chouhan
+   Susmita Das
+
+MCS:
+   Abhirup Das
+   Arish Monda
+   Ashim Paul
+   Nandita Das
+   Sayantika Roy
+   Shreya Mukherjee
+   Sohag Bala
+
+MHM (Hotel:
+   Abanti Mitra
+   Abhijit Sarkar
+   Agnik Chaltopadhyay
+   Anish Sen
+   Ankita Dian
+   Argha Karmakar
+   Arpan Maity
+   Avranil Nandi
+   Debalina Sinha
+   Disha Halder
+   Garima Halder
+   Jytipriyo Das
+   Kusum Nandy
+   Mayur Chatterjee
+   MD. Obidur Rahaman
+   Nilanjan Das
+   Pallab Mondal
+   Sampurna Pradhan
+   Siddhartha Bhattacharya
+   Sonali Adhikary
+   Sonia Manapatra
+   Souvik Debnath
+   Srestra Banerjee
+   Srinjana Jana
+   Subhadip Jana
+   Subham Adikary
+   Subhamoy Banerjee
+   Subhra Patra
+   Sudip Gorai
+   Susmita Dandapat
+   Swagata Hazra
+   Tanmoy Kumar Ghosh
+
+`,
+};
+
+function makeId(){return 's'+Date.now()+Math.random().toString(36).substr(2,9)}
+
+const EMBEDDED_DATA = buildEmbeddedData();
+const EMBEDDED_ATTENDANCE = {};
+let dataStore = cloneData(EMBEDDED_DATA);
+let attendanceStore = cloneData(EMBEDDED_ATTENDANCE);
+
+function cloneData(obj){
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function buildEmbeddedData(){
+  const year1Students = parseTextToStudents(EMBEDDED_STUDENTS_BY_YEAR[1] || '', '', EMBEDDED_COURSES[1] || []);
+  const year2Students = parseTextToStudents(EMBEDDED_STUDENTS_BY_YEAR[2] || '', '', EMBEDDED_COURSES[2] || []);
+  const year3Students = parseTextToStudents(EMBEDDED_STUDENTS_BY_YEAR[3] || '', '', EMBEDDED_COURSES[3] || []);
+  const year4Students = parseTextToStudents(EMBEDDED_STUDENTS_BY_YEAR[4] || '', '', EMBEDDED_COURSES[4] || []);
+
+  return {
+    1: {
+      courses: mergeCourseNames(getUniqueCourses(year1Students), EMBEDDED_COURSES[1] || []),
+      students: year1Students
+    },
+    2: {
+      courses: mergeCourseNames(getUniqueCourses(year2Students), EMBEDDED_COURSES[2] || []),
+      students: year2Students
+    },
+    3: {
+      courses: mergeCourseNames(getUniqueCourses(year3Students), EMBEDDED_COURSES[3] || []),
+      students: year3Students
+    },
+    4: {
+      courses: mergeCourseNames(getUniqueCourses(year4Students), EMBEDDED_COURSES[4] || []),
+      students: year4Students
+    }
+  };
+}
+
+function mergeCourseNames(existingCourses, names){
+  const out = existingCourses.slice();
+  const seen = new Set(out.map(c=>c.name));
+  names.forEach(name=>{
+    if(!seen.has(name)){
+      seen.add(name);
+      out.push({id: makeId(), name});
+    }
+  });
+  return out;
+}
+
+function getUniqueCourses(students){
+  const seen = new Set();
+  const courses = [];
+  students.forEach(s=>{
+    if(!seen.has(s.dept)){
+      seen.add(s.dept);
+      courses.push({id: makeId(), name: s.dept});
+    }
+  });
+  return courses;
+}
+
+function loadAttendance(){
+  return attendanceStore;
+}
+
+function saveAttendance(obj){
+  attendanceStore = obj;
+}
+
+function skipSat(){return localStorage.getItem(LS_SKIP_SAT)==='1'}
+function setSkipSat(v){localStorage.setItem(LS_SKIP_SAT, v?'1':'0')}
+
+function dateKey(d){
+  const dt = new Date(d);
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth()+1).padStart(2,'0');
+  const day = String(dt.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function prettyDate(d){
+  const dt = new Date(d);
+  const day = String(dt.getDate()).padStart(2,'0');
+  const mon = String(dt.getMonth()+1).padStart(2,'0');
+  return `${day}-${mon}-${dt.getFullYear()}`;
+}
+
+function normalizeCourseName(value){
+  return String(value)
+    .trim()
+    .replace(/:$/,'')
+    .replace(/\s+/g,' ')
+    .toLowerCase();
+}
+
+function buildAllowedCourseMap(allowedDepts){
+  if(!Array.isArray(allowedDepts)) return null;
+  const map = {};
+  allowedDepts.forEach(name=>{
+    const key = normalizeCourseName(name);
+    if(key) map[key] = name.trim();
+  });
+  return map;
+}
+
+function parseTextToStudents(text, defaultDept='', allowedDepts=null){
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const out = [];
+  let currentDept = defaultDept;
+  const allowedMap = buildAllowedCourseMap(allowedDepts);
+  
+  for(const line of lines){
+    const normalized = normalizeCourseName(line);
+    const mappedDept = allowedMap ? allowedMap[normalized] : null;
+    if(allowedMap){
+      if(mappedDept){
+        currentDept = mappedDept;
+        continue;
+      }
+    }else if((/^[A-Z\s\(\):\-]{2,35}$/i.test(line) && !/,/.test(line))){
+      currentDept = line.replace(/\(department\)/gi,'').replace(/:/g,'').trim();
+      continue;
+    }
+    
+    const clean = line.replace(/^[-\*\d\.\)\s]+/,'').trim();
+    if(!clean) continue;
+    
+    const parts = clean.split(',').map(p=>p.trim());
+    out.push({
+      id: makeId(),
+      name: parts[0],
+      roll: parts[1]||'',
+      dept: currentDept || 'General'
+    });
+  }
+  return out;
+}
+
+function openModal(id){
+  document.getElementById(id).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function init(){
+  const today = new Date();
+  document.getElementById('datePicker').value = today.toISOString().slice(0,10);
+  
+  if(localStorage.getItem(LS_SKIP_SAT)===null) setSkipSat(false);
+  
+  renderYearTabs();
+  renderToggle();
+  updateYearDisplay();
+  renderAttendance();
+  setupEventListeners();
+}
+
+function renderYearTabs(){
+  const container = document.getElementById('yearTabs');
+  const years = [1,2,3,4];
+  const yearNames = ['1st','2nd','3rd','4th'];
+  
+  container.innerHTML = years.map(y => 
+    `<button class="year-tab ${y===1?'active':''}" onclick="switchYear(${y})">${yearNames[y-1]} Year</button>`
+  ).join('');
+}
+
+function switchYear(year){
+  currentYear = year;
+  document.querySelectorAll('.year-tab').forEach((tab,i)=>{
+    tab.classList.toggle('active', i+1===year);
+  });
+  updateYearDisplay();
+  renderAttendance();
+}
+
+function setupEventListeners(){
+  document.getElementById('backToLanding').onclick = ()=>{
+    if(window.history.length > 1){
+      window.history.back();
+      return;
+    }
+    window.location.href = 'Index.html';
+  };
+
+  document.getElementById('toggleSat').onclick = ()=>{
+    setSkipSat(!skipSat());
+    renderToggle();
+    renderAttendance();
+  };
+  
+  document.getElementById('datePicker').onchange = renderAttendance;
+  
+  
+  document.getElementById('fileInput').onchange = (e)=>{
+    const file = e.target.files[0];
+    if(file){
+      const reader = new FileReader();
+      reader.onload = (e)=>{
+        document.getElementById('bulkInput').value = e.target.result;
+      };
+      reader.readAsText(file);
+    }
+  };
+  
+  
+  document.getElementById('clearDate').onclick = ()=>{
+    if(!confirm('Clear attendance for this date?')) return;
+    const key = dateKey(document.getElementById('datePicker').value);
+    const rec = loadAttendance();
+    delete rec[key];
+    saveAttendance(rec);
+    renderAttendance();
+  };
+  
+  
+  document.getElementById('copyToClipboard').onclick = async ()=>{
+    const text = buildExportString();
+    try{
+      await navigator.clipboard.writeText(text);
+      alert('✓ Copied to clipboard!');
+    }catch(e){
+      alert('Copy failed. Try download instead.');
+    }
+  };
+  
+
+  document.getElementById('shareWhatsApp').onclick = ()=>{
+    const text = buildExportString();
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
+  document.getElementById('copyEmbed').onclick = async ()=>{
+    try{
+      await navigator.clipboard.writeText(buildEmbedSnippet());
+      alert('✓ Copied embed snippet');
+    }catch(e){
+      alert('Copy failed. Select and copy manually.');
+    }
+  };
+}
+
+function renderToggle(){
+  document.getElementById('toggleSat').textContent = skipSat() ? '✓ Skip Saturdays' : '✗ Count Saturdays';
+}
+
+function initTheme(){}
+function toggleTheme(){}
+function updateThemeToggle(){}
+
+function updateYearDisplay(){
+  const names = ['1st','2nd','3rd','4th'];
+  document.getElementById('currentYearDisplay').textContent = `${names[currentYear-1]} Year`;
+  document.getElementById('newStudentYear').value = currentYear;
+  document.getElementById('importYear').value = currentYear;
+}
+
+function updateAdminUI(){}
+
+function escapeAttr(value){
+  return String(value).replace(/"/g,'&quot;');
+}
+
+function safeCssEscape(value){
+  if(window.CSS && CSS.escape) return CSS.escape(value);
+  return String(value).replace(/["\\]/g,'\\$&');
+}
+
+function buildEmbedSnippet(){
+  return `const EMBEDDED_DATA = ${JSON.stringify(dataStore, null, 2)};\n\nconst EMBEDDED_ATTENDANCE = ${JSON.stringify(attendanceStore, null, 2)};`;
+}
+
+function openEmbedModal(){
+  document.getElementById('embedOutput').value = buildEmbedSnippet();
+  openModal('embedModal');
+}
+
+function requireAdmin(){return true;}
+
+function renderAttendance(){
+  return renderAttendanceWithOpen('');
+}
+
+function renderAttendanceWithOpen(openDept){
+  const yearData = dataStore[currentYear];
+  const year = yearData.students || [];
+  const courses = yearData.courses || [];
+  const rec = loadAttendance();
+  const key = dateKey(document.getElementById('datePicker').value);
+  const present = new Set(rec[key]?.present||[]);
+  updateGlobalTotals(present);
+  
+  const container = document.getElementById('studentsContainer');
+  
+  const dt = new Date(document.getElementById('datePicker').value + 'T00:00:00');
+  const day = dt.getDay();
+  const skip = day===0 || (day===6 && skipSat());
+  
+  const notice = document.getElementById('holidayNotice');
+  if(skip){
+    notice.style.display='block';
+    notice.innerHTML = day===0 
+      ? `📅 <strong>Sunday</strong> (${prettyDate(document.getElementById('datePicker').value)}) - Skipped`
+      : `📅 <strong>Saturday</strong> (${prettyDate(document.getElementById('datePicker').value)}) - Skipped`;
+  }else{
+    notice.style.display='none';
+  }
+  
+  if(year.length===0 && courses.length===0){
+    container.innerHTML = '<div class="muted" style="text-align:center;padding:20px">No students or courses. Click "Course" or "Add" to begin.</div>';
+    return;
+  }
+  
+  const byDept = {};
+  year.forEach(s=>{
+    if(!byDept[s.dept]) byDept[s.dept]=[];
+    byDept[s.dept].push(s);
+  });
+
+  courses.forEach(c=>{
+    if(!byDept[c.name]) byDept[c.name]=[];
+  });
+  
+  let html = '<div class="course-list">';
+  Object.keys(byDept).sort().forEach(dept=>{
+    const courseId = (courses.find(c=>c.name===dept) || {}).id || '';
+    const presentCount = byDept[dept].filter(s=>present.has(s.id)).length;
+    html += `<details class="course" data-dept="${escapeAttr(dept)}">`;
+    html += `<summary class="course-summary">`;
+    html += `<span class="course-summary-left">${dept} <span class="course-count"><span class="course-pill">${presentCount} present</span></span></span>`;
+    html += `<span class="course-summary-right">`;
+    html += `<span class="course-actions">`;
+    html += `<button class="ghost" ${skip?'disabled':''} onclick="event.stopPropagation();setDeptAttendance('${dept.replace(/'/g,"\\'")}',true)">All Present</button>`;
+    html += `<button class="ghost" ${skip?'disabled':''} onclick="event.stopPropagation();setDeptAttendance('${dept.replace(/'/g,"\\'")}',false)">All Absent</button>`;
+    html += `</span>`;
+    html += `<span class="course-meta">`;
+    html += `<span class="course-pill">${byDept[dept].length} students</span>`;
+    html += `<span>Click to view</span>`;
+    html += `</span></span>`;
+    html += `</summary>`;
+    html += `<div class="course-body">`;
+    html += `<table><thead><tr><th>#</th><th>Name</th><th>Roll</th><th>Present</th></tr></thead><tbody>`;
+
+    byDept[dept].forEach((s,i)=>{
+      const checked = present.has(s.id);
+      const dis = skip?'disabled':'';
+      html += `<tr>
+        <td>${i+1}</td>
+        <td>${s.name}</td>
+        <td class="muted">${s.roll||'-'}</td>
+        <td><input type="checkbox" ${checked?'checked':''} ${dis} onchange="togglePresent('${s.id}',this.checked)"></td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div></details>`;
+  });
+  html += '</div>';
+
+  container.innerHTML = html;
+  const panels = container.querySelectorAll('details.course');
+  panels.forEach(panel=>{
+    panel.addEventListener('toggle', ()=>{
+      if(panel.open){
+        panels.forEach(other=>{
+          if(other!==panel) other.removeAttribute('open');
+        });
+      }
+    });
+  });
+
+  if(openDept){
+    const selector = `details.course[data-dept="${safeCssEscape(openDept)}"]`;
+    const match = container.querySelector(selector);
+    if(match) match.setAttribute('open','');
+  }
+}
+
+function updateGlobalTotals(presentSet){
+  const allPresent = presentSet || new Set();
+  const yearData = dataStore[currentYear] || {students: []};
+  const students = yearData.students || [];
+  let present = 0;
+  students.forEach(s=>{
+    if(allPresent.has(s.id)) present += 1;
+  });
+  const total = students.length;
+  const absent = Math.max(0, total - present);
+  const presentEl = document.getElementById('totalPresentAll');
+  const absentEl = document.getElementById('totalAbsentAll');
+  if(presentEl) presentEl.textContent = present;
+  if(absentEl) absentEl.textContent = absent;
+}
+
+function setDeptAttendance(dept, makePresent){
+  const key = dateKey(document.getElementById('datePicker').value);
+  const yearData = dataStore[currentYear];
+  const deptStudents = yearData.students.filter(s=>s.dept===dept);
+  const rec = loadAttendance();
+  if(!rec[key]) rec[key] = {present: []};
+  const ps = new Set(rec[key].present);
+  if(makePresent){
+    deptStudents.forEach(s=>ps.add(s.id));
+  }else{
+    deptStudents.forEach(s=>ps.delete(s.id));
+  }
+  rec[key].present = Array.from(ps);
+  saveAttendance(rec);
+  renderAttendanceWithOpen(dept);
+}
+
+function togglePresent(id, checked){
+  const key = dateKey(document.getElementById('datePicker').value);
+  const rec = loadAttendance();
+  if(!rec[key]) rec[key]={present:[]};
+  const ps = new Set(rec[key].present);
+  if(checked) ps.add(id); else ps.delete(id);
+  rec[key].present = Array.from(ps);
+  saveAttendance(rec);
+  const yearData = dataStore[currentYear];
+  const student = yearData.students.find(s=>s.id===id);
+  renderAttendanceWithOpen(student ? student.dept : '');
+}
+
+function confirmAddStudent(){
+  const name = document.getElementById('newStudentName').value.trim();
+  const dept = document.getElementById('newStudentDept').value.trim();
+  const roll = document.getElementById('newStudentRoll').value.trim();
+  const year = parseInt(document.getElementById('newStudentYear').value);
+  
+  if(!name){alert('Enter name'); return;}
+  if(!dept){alert('Enter department'); return;}
+  
+  const yearData = dataStore[year];
+  yearData.students.push({id:makeId(), name, dept, roll});
+  if(!yearData.courses.some(c=>c.name===dept)){
+    yearData.courses.push({id: makeId(), name: dept});
+  }
+  
+  closeModal('addModal');
+  if(year===currentYear) renderAttendance();
+  alert(`✓ ${name} added to ${['1st','2nd','3rd','4th'][year-1]} year`);
+}
+
+function confirmImport(){
+  const text = document.getElementById('bulkInput').value.trim();
+  const defaultDept = document.getElementById('importDept').value.trim();
+  const year = parseInt(document.getElementById('importYear').value);
+  
+  if(!text){alert('Paste or upload student list'); return;}
+  
+  const parsed = parseTextToStudents(text, defaultDept);
+  if(parsed.length===0){alert('No valid students found'); return;}
+  
+  const yearData = dataStore[year];
+  yearData.students = yearData.students.concat(parsed);
+  getUniqueCourses(parsed).forEach(c=>{
+    if(!yearData.courses.some(existing=>existing.name===c.name)){
+      yearData.courses.push({id: makeId(), name: c.name});
+    }
+  });
+  
+  closeModal('importModal');
+  if(year===currentYear) renderAttendance();
+  alert(`✓ ${parsed.length} students imported to ${['1st','2nd','3rd','4th'][year-1]} year`);
+}
+
+function confirmDelete(id, name){
+  deleteTargetCourse = null;
+  deleteTargetId = id;
+  document.getElementById('deleteMessage').textContent = `Delete "${name}"? This removes them from all records.`;
+  openModal('deleteModal');
+}
+
+function confirmDeleteCourse(id, name){
+  deleteTargetId = null;
+  deleteTargetCourse = {id, name};
+  document.getElementById('deleteMessage').textContent = `Delete course "${name}" and all students in it?`;
+  openModal('deleteModal');
+}
+
+function deleteStudent(){
+  if(deleteTargetCourse){
+    const yearData = dataStore[currentYear];
+    yearData.courses = yearData.courses.filter(c=>c.id!==deleteTargetCourse.id);
+    yearData.students = yearData.students.filter(s=>s.dept!==deleteTargetCourse.name);
+    deleteTargetCourse = null;
+    closeModal('deleteModal');
+    renderAttendance();
+    return;
+  }
+  if(!deleteTargetId) return;
+  
+  const yearData = dataStore[currentYear];
+  yearData.students = yearData.students.filter(s=>s.id!==deleteTargetId);
+  
+  const rec = loadAttendance();
+  Object.keys(rec).forEach(k=>{
+    rec[k].present = rec[k].present.filter(id=>id!==deleteTargetId);
+  });
+  saveAttendance(rec);
+  
+  deleteTargetId = null;
+  closeModal('deleteModal');
+  renderAttendance();
+}
+
+function buildExportString(){
+  const type = document.querySelector('input[name="exportType"]:checked').value;
+  const year = dataStore[currentYear].students || [];
+  const rec = loadAttendance();
+  const key = dateKey(document.getElementById('datePicker').value);
+  const present = new Set(rec[key]?.present||[]);
+  const dt = prettyDate(document.getElementById('datePicker').value);
+  const names = ['1st','2nd','3rd','4th'];
+  
+  const filtered = year.filter(s=> type==='present' ? present.has(s.id) : !present.has(s.id));
+  
+  if(filtered.length===0){
+    return `${type==='present'?'Present':'Absent'} for ${dt} (${names[currentYear-1]} Year):\nNone`;
+  }
+  
+  let output = `${type==='present'?'Present':'Absent'} for ${dt} (${names[currentYear-1]} Year):\n\n`;
+  
+  const byDept = {};
+  filtered.forEach(s=>{
+    if(!byDept[s.dept]) byDept[s.dept]=[];
+    byDept[s.dept].push(s);
+  });
+  
+  Object.keys(byDept).sort().forEach(dept=>{
+    output += `${dept}:\n`;
+    byDept[dept].forEach((s,i)=>{
+      output += `  ${i+1}) ${s.name}${s.roll?' ('+s.roll+')':''}\n`;
+    });
+    output += '\n';
+  });
+  
+  output += `Total: ${filtered.length} student${filtered.length!==1?'s':''}`;
+  return output;
+}
+
+function downloadText(filename, text){
+  const blob = new Blob([text], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+init();
+
+// Disable right-click and common devtools shortcuts.
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+document.addEventListener('keydown', (e) => {
+  const key = e.key.toLowerCase();
+  if(
+    key === 'f12' ||
+    (e.ctrlKey && e.shiftKey && (key === 'i' || key === 'j' || key === 'c')) ||
+    (e.ctrlKey && key === 'u')
+  ){
+    e.preventDefault();
+  }
+});
+</script>
+</body>
+</html>
