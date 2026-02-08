@@ -3,8 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>Class Report Generator</title>
+    <title>Academic Management System</title>
     <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0a0f1f;
+            --surface: #0f172a;
+            --surface-soft: #111827;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: rgba(148, 163, 184, 0.22);
+            --primary: #8b5cf6;
+            --primary-strong: #7c3aed;
+            --accent: #22d3ee;
+            --grid: rgba(148, 163, 184, 0.08);
+            --shadow: 0 18px 42px rgba(2, 6, 23, 0.55);
+            --glow: 0 0 0 1px rgba(139, 92, 246, 0.2), 0 18px 50px rgba(2, 6, 23, 0.65);
+        }
+
+        [data-theme="light"] {
+            color-scheme: light;
+            --bg: #f6f7fb;
+            --surface: #ffffff;
+            --surface-soft: #f1f5f9;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #4f46e5;
+            --primary-strong: #4338ca;
+            --accent: #06b6d4;
+            --grid: rgba(15, 23, 42, 0.08);
+            --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+            --glow: 0 0 0 1px rgba(79, 70, 229, 0.16), 0 12px 30px rgba(15, 23, 42, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,356 +44,279 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(520px circle at 8% 10%, rgba(139, 92, 246, 0.18), transparent 60%),
+                radial-gradient(520px circle at 92% 20%, rgba(34, 211, 238, 0.15), transparent 60%),
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: auto, auto, 36px 36px, 36px 36px;
+            color: var(--text);
             min-height: 100vh;
-            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            transition: background 0.25s ease, color 0.25s ease;
         }
 
         .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            overflow: hidden;
+            max-width: 960px;
+            width: 100%;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
+            text-align: center;
+            margin-bottom: 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            align-items: center;
+            position: relative;
+        }
+
+        .header-top {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            position: relative;
+        }
+
+        .header-title {
+            width: 100%;
             text-align: center;
         }
 
         .header h1 {
-            font-size: 28px;
+            font-size: clamp(28px, 3.4vw, 40px);
+            font-weight: 700;
+            letter-spacing: -0.02em;
             margin-bottom: 10px;
+            line-height: 1.15;
+            text-wrap: balance;
         }
 
         .header p {
-            opacity: 0.9;
-            font-size: 14px;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 560px;
+            text-wrap: pretty;
         }
 
-        .content {
-            padding: 30px;
-        }
-
-        .class-entry {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .class-entry h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .form-row {
+        .cards-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
+        .card {
+            background: linear-gradient(180deg, var(--surface), var(--surface-soft));
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px 26px;
+            text-align: left;
+            box-shadow: var(--shadow);
+            transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
 
-        .form-group.full-width {
-            grid-column: 1 / -1;
+        .card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0.8;
         }
 
-        label {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #495057;
-            font-size: 14px;
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(139, 92, 246, 0.45);
+            box-shadow: var(--glow);
         }
 
-        input, select, textarea {
-            padding: 10px;
-            border: 2px solid #dee2e6;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+        .card-icon {
+            font-size: 40px;
+            margin-bottom: 18px;
+            display: inline-flex;
+            width: 56px;
+            height: 56px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(34, 211, 238, 0.2));
         }
 
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            line-height: 1.25;
+            text-wrap: balance;
         }
 
-        .btn {
-            padding: 12px 25px;
+        .card p {
+            color: var(--muted);
+            font-size: 14.5px;
+            line-height: 1.6;
+            margin-bottom: 18px;
+            text-wrap: pretty;
+        }
+
+        .card-button {
+            background: linear-gradient(120deg, var(--primary), var(--accent));
+            color: white;
+            padding: 10px 18px;
+            border-radius: 10px;
             border: none;
-            border-radius: 6px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            display: inline-block;
+            text-decoration: none;
         }
 
-        .btn-primary {
-            background: #667eea;
-            color: white;
+        .card-button:hover {
+            background: linear-gradient(120deg, var(--primary-strong), var(--accent));
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(34, 211, 238, 0.18);
         }
 
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-            padding: 8px 15px;
-            font-size: 12px;
+        .theme-toggle {
             position: absolute;
-            top: 15px;
-            right: 15px;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-            margin-left: 10px;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .preset-btn {
-            font-size: 12px !important;
-            padding: 10px !important;
-            width: auto !important;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .output-section {
-            margin-top: 30px;
-            padding-top: 30px;
-            border-top: 2px solid #e9ecef;
-        }
-
-        .output-section h2 {
-            color: #495057;
-            margin-bottom: 15px;
-            font-size: 20px;
-        }
-
-        .report-output {
-            background: #f8f9fa;
-            border: 2px solid #dee2e6;
-            border-radius: 10px;
-            padding: 20px;
-            white-space: pre-wrap;
-            font-family: monospace;
+            top: 0;
+            right: 0;
+            background: linear-gradient(120deg, var(--primary), var(--accent));
+            color: #ffffff;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 999px;
             font-size: 13px;
-            line-height: 1.6;
-            max-height: 400px;
-            overflow-y: auto;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
         }
 
-        .copy-notification {
-            display: none;
-            background: #28a745;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 6px;
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
+        .theme-toggle:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 24px rgba(15, 23, 42, 0.32);
         }
 
-        .copy-notification.show {
-            display: block;
+        .footer {
+            text-align: center;
+            margin-top: 32px;
         }
 
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        .footer p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
         }
 
-        .date-input {
-            margin-bottom: 20px;
+        .footer a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .footer a:visited {
+            color: inherit;
+        }
+
+        .footer a:hover {
+            color: var(--text);
+        }
+
+        .footer .heart {
+            color: #ef4444;
         }
 
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .container {
-                border-radius: 10px;
-            }
-
             .header {
-                padding: 20px 15px;
+                margin-bottom: 28px;
             }
 
-            .header h1 {
-                font-size: 22px;
-            }
-
-            .header p {
-                font-size: 13px;
-            }
-
-            .content {
-                padding: 15px;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .class-entry {
-                padding: 15px;
-            }
-
-            .class-entry h3 {
-                font-size: 16px;
-                margin-bottom: 12px;
-            }
-
-            .btn-danger {
-                position: static;
-                margin-top: 10px;
-                width: 100%;
-            }
-
-            input, select, textarea {
-                font-size: 16px; /* Prevents zoom on iOS */
-                padding: 12px;
-            }
-
-            .btn:not(.preset-btn) {
-                padding: 14px 20px;
-                font-size: 15px;
-                width: 100%;
-            }
-
-            .preset-btn {
-                font-size: 11px !important;
-                padding: 10px 8px !important;
-                width: auto !important;
-            }
-
-            .actions {
+            .header-top {
                 flex-direction: column;
             }
 
-            .btn-secondary {
-                margin-left: 0;
+            .theme-toggle {
+                position: static;
             }
 
-            .output-section h2 {
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 18px;
+            }
+
+            .header-top {
+                gap: 10px;
+            }
+
+            .card {
+                padding: 22px 20px;
+            }
+
+            .card-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .header h1 {
+                font-size: 26px;
+            }
+
+            .header p {
+                font-size: 14.5px;
+            }
+
+            .card h2 {
                 font-size: 18px;
             }
-
-            .report-output {
-                font-size: 12px;
-                padding: 15px;
-                max-height: 300px;
-            }
-
-            .copy-notification {
-                right: 10px;
-                top: 10px;
-                font-size: 14px;
-            }
-
-            .date-input {
-                margin-bottom: 15px;
-            }
         }
 
-        @media (max-width: 480px) {
+        @media (min-width: 1400px) {
+            .container {
+                max-width: 1040px;
+            }
+
             .header h1 {
-                font-size: 20px;
+                font-size: 44px;
             }
 
-            .content {
-                padding: 12px;
+            .header p {
+                font-size: 17px;
             }
 
-            .class-entry {
-                padding: 12px;
+            .card h2 {
+                font-size: 22px;
             }
 
-            label {
-                font-size: 13px;
+            .card p {
+                font-size: 15px;
             }
 
-            .btn:not(.preset-btn) {
-                font-size: 14px;
-                padding: 12px 16px;
+            .cards-container {
+                gap: 24px;
             }
 
-            .preset-btn {
-                font-size: 10px !important;
-                padding: 8px 6px !important;
-            }
-
-            .report-output {
-                font-size: 11px;
-            }
-
-            footer {
-                font-size: 13px !important;
-                padding: 15px 10px !important;
-            }
-        }
-
-        /* Touch-friendly improvements */
-        @media (hover: none) and (pointer: coarse) {
-            .btn:not(.preset-btn) {
-                min-height: 44px; /* Apple's recommended touch target size */
-            }
-
-            .preset-btn {
-                min-height: 38px;
-            }
-
-            input, select {
-                min-height: 44px;
+            .card {
+                padding: 30px 30px;
             }
         }
     </style>
@@ -369,368 +324,113 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📚 Class Report Generator</h1>
-            <p>Generate WhatsApp-ready class reports instantly</p>
+            <div class="header-top">
+                <h1 class="header-title">Academic Management System </h1>
+                <button class="theme-toggle" id="themeToggle" type="button">Light mode</button>
+            </div>
+            <p>Choose the tool you need to manage your academic tasks</p>
         </div>
 
-        <div class="content">
-            <div class="date-input">
-                <div class="form-group">
-                    <label for="reportDate">Report Date (Sundays Auto-Skipped):</label>
-                    <input type="date" id="reportDate" value="">
-                </div>
+        <div class="cards-container">
+            <div class="card" onclick="navigateTo('attendance')">
+                <div class="card-icon">✅</div>
+                <h2>Student Attendance</h2>
+                <p>Manage student attendance by course and year. Mark present/absent, generate reports, and export for WhatsApp.</p>
+                <button class="card-button">Manage Attendance</button>
             </div>
 
-            <div style="background: #e7f3ff; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #667eea;">
-                <h3 style="color: #667eea; margin-bottom: 15px; font-size: 16px;">⚡ Quick Add Presets</h3>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="font-weight: 600; color: #495057; margin-bottom: 8px; display: block;">Select Faculty:</label>
-                    <select id="facultySelector" style="width: 100%; max-width: 100%; padding: 10px; border: 2px solid #667eea; border-radius: 6px; font-size: 14px; background: white;">
-                        <option value="Tasir Ahhamed Laskar">Tasir Ahhamed Laskar</option>
-                        <option value="Kirtika Ghosh">Kirtika Ghosh</option>
-                        <option value="Chayanika Das">Chayanika Das</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label style="font-weight: 600; color: #495057; margin-bottom: 8px; display: block;">Quick Add Course:</label>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px;">
-                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('ALL HOTEL+BTTM')">ALL HOTEL+BTTM</button>
-                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('ALL HOTEL')">ALL HOTEL</button>
-                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('BTTM')">BTTM</button>
-                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('BHHA')">BHHA</button>
-                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('MHM')">MHM</button>
-                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('BBA')">BBA</button>
-                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('BCA')">BCA</button>
-                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('MBA HC')">MBA HC</button>
-                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('MBA HC (ONLINE)')">MBA HC (ONLINE)</button>
-                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('DHO (ONLINE)')">DHO (ONLINE)</button>
-                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('BHM HOSPITAL')">BHM HOSPITAL</button>
-                        <button class="btn btn-primary preset-btn" onclick="addPresetClass('DHM')">DHM</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="classesContainer"></div>
-
-            <div class="actions">
-                <button class="btn btn-primary" onclick="addClassEntry()">➕ Add Class</button>
-                <button class="btn btn-success" onclick="generateAndShare()">🚀 Generate & Share on WhatsApp</button>
-                <button class="btn btn-secondary" onclick="clearAll()">🗑️ Clear All</button>
-            </div>
-
-            <div class="output-section" id="outputSection" style="display: none;">
-                <h2>Generated Report:</h2>
-                <div class="report-output" id="reportOutput"></div>
-                <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn btn-success" onclick="shareOnWhatsApp()">💬 Share on WhatsApp</button>
-                    <button class="btn btn-primary" onclick="copyReport()">📋 Copy to Clipboard</button>
-                </div>
+            <div class="card" onclick="navigateTo('report')">
+                <div class="card-icon">📝</div>
+                <h2>Class Report Generator</h2>
+                <p>Generate professional class reports with automatic duration calculation and direct WhatsApp sharing.</p>
+                <button class="card-button">Generate Report</button>
             </div>
         </div>
-    </div>
 
-    <footer style="text-align: center; padding: 20px; color: white; font-size: 14px; margin-top: 20px;">
-        Designed with <span style="color: #ff6b6b; font-size: 16px;">❤️</span> by <strong>Tasir</strong>
-    </footer>
-
-    <div class="copy-notification" id="copyNotification">
-        ✓ Report copied to clipboard!
+        <div class="footer">
+            <p>Designed with <span class="heart">❤️</span> by <strong><a href="https://tasir.me/">Tasir</a></strong></p>
+        </div>
     </div>
 
     <script>
-        let classCount = 0;
+        const THEME_STORAGE_KEY = 'ams-theme';
+        const themeToggleButton = document.getElementById('themeToggle');
 
-        // Function to get next valid date (skip Sundays)
-        function getNextValidDate() {
-            let date = new Date();
-            // If today is Sunday (0), move to Monday
-            if (date.getDay() === 0) {
-                date.setDate(date.getDate() + 1);
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            themeToggleButton.textContent = theme === 'dark' ? 'Light mode' : 'Dark mode';
+            localStorage.setItem(THEME_STORAGE_KEY, theme);
+        }
+
+        const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+        const initialTheme = savedTheme === 'light' ? 'light' : 'dark';
+        setTheme(initialTheme);
+
+        themeToggleButton.addEventListener('click', function() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // Disable right-click
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+        document.addEventListener('keydown', function(e) {
+            // F12
+            if (e.key === 'F12') {
+                e.preventDefault();
+                return false;
             }
-            return date;
-        }
-
-        // Set date and skip Sundays
-        function setValidDate() {
-            const dateInput = document.getElementById('reportDate');
-            const validDate = getNextValidDate();
-            
-            // Format date as YYYY-MM-DD for input
-            const year = validDate.getFullYear();
-            const month = String(validDate.getMonth() + 1).padStart(2, '0');
-            const day = String(validDate.getDate()).padStart(2, '0');
-            const formattedDate = `${year}-${month}-${day}`;
-            
-            dateInput.value = formattedDate;
-        }
-
-        // Initialize date on load
-        setValidDate();
-
-        // Update date automatically at midnight and check every hour
-        function checkAndUpdateDate() {
-            setValidDate();
-        }
-
-        // Check every hour if date needs updating
-        setInterval(checkAndUpdateDate, 3600000); // 1 hour in milliseconds
-
-        // Also check when page becomes visible again (user returns to tab)
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                checkAndUpdateDate();
+            // Ctrl+Shift+I (Inspector)
+            if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+J (Console)
+            if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+C (Inspect Element)
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+U (View Source)
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                return false;
             }
         });
 
-        // Prevent selecting Sundays
-        document.getElementById('reportDate').addEventListener('change', function() {
-            const selectedDate = new Date(this.value + 'T00:00:00');
-            if (selectedDate.getDay() === 0) {
-                alert('Sundays are not allowed! Moving to Monday.');
-                selectedDate.setDate(selectedDate.getDate() + 1);
-                const year = selectedDate.getFullYear();
-                const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-                const day = String(selectedDate.getDate()).padStart(2, '0');
-                this.value = `${year}-${month}-${day}`;
+        // Detect if DevTools is open
+        const devtools = /./;
+        devtools.toString = function() {
+            this.opened = true;
+        }
+        
+        const checkDevTools = setInterval(function() {
+            if (devtools.opened) {
+                window.location.reload();
             }
+            devtools.opened = false;
+        }, 1000);
+
+        function navigateTo(page) {
+            if (page === 'attendance') {
+                window.location.href = 'attendance_system.html';
+            } else if (page === 'report') {
+                window.location.href = 'class-report-generator.html';
+            }
+        }
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === '1') navigateTo('attendance');
+            if (e.key === '2') navigateTo('report');
         });
-
-        function addClassEntry(course = '', subject = '') {
-            classCount++;
-            const container = document.getElementById('classesContainer');
-            
-            // Get selected faculty from dropdown
-            const selectedFaculty = document.getElementById('facultySelector').value;
-            
-            const classDiv = document.createElement('div');
-            classDiv.className = 'class-entry';
-            classDiv.id = `class-${classCount}`;
-            
-            classDiv.innerHTML = `
-                <h3>Class ${classCount}</h3>
-                <button class="btn btn-danger" onclick="removeClass(${classCount})">✕ Remove</button>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Start Time:</label>
-                        <input type="time" class="start-time" required>
-                    </div>
-                    <div class="form-group">
-                        <label>End Time:</label>
-                        <input type="time" class="end-time" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Course:</label>
-                        <input type="text" class="course" placeholder="e.g., MBA HC" value="${course}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Subject:</label>
-                        <input type="text" class="subject" placeholder="e.g., IT" value="${subject}" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Topic:</label>
-                        <input type="text" class="topic" placeholder="e.g., SQL" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Students Present:</label>
-                        <input type="number" class="students" min="0" placeholder="e.g., 8" required>
-                    </div>
-                </div>
-
-                <div class="form-group full-width">
-                    <label>Faculty:</label>
-                    <input type="text" class="faculty" placeholder="e.g., Tasir Ahhamed Laskar" value="${selectedFaculty}" required>
-                </div>
-            `;
-            
-            container.appendChild(classDiv);
-            
-            // Scroll to new entry
-            classDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        function addPresetClass(course) {
-            addClassEntry(course, '');
-            
-            // Show quick notification
-            const notification = document.getElementById('copyNotification');
-            notification.textContent = `✓ ${course} added!`;
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 1500);
-        }
-
-        function removeClass(id) {
-            const element = document.getElementById(`class-${id}`);
-            if (element) {
-                element.remove();
-            }
-        }
-
-        function calculateDuration(startTime, endTime) {
-            const start = new Date(`2000/01/01 ${startTime}`);
-            const end = new Date(`2000/01/01 ${endTime}`);
-            const diff = (end - start) / 1000 / 60; // difference in minutes
-            return Math.round(diff);
-        }
-
-        function formatTime(time24) {
-            const [hours, minutes] = time24.split(':');
-            let h = parseInt(hours);
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12 || 12;
-            return `${h}.${minutes}`;
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = String(date.getFullYear()).slice(-2);
-            return `${day}/${month}/${year}`;
-        }
-
-        function generateReport() {
-            const classes = document.querySelectorAll('.class-entry');
-            
-            if (classes.length === 0) {
-                alert('Please add at least one class entry!');
-                return false;
-            }
-
-            const reportDate = document.getElementById('reportDate').value;
-            if (!reportDate) {
-                alert('Please select a report date!');
-                return false;
-            }
-
-            let report = `Class report for On campus on ${formatDate(reportDate)}\n`;
-            report += '________________________________\n';
-
-            let allFieldsFilled = true;
-
-            classes.forEach((classEntry, index) => {
-                const startTime = classEntry.querySelector('.start-time').value;
-                const endTime = classEntry.querySelector('.end-time').value;
-                const course = classEntry.querySelector('.course').value;
-                const subject = classEntry.querySelector('.subject').value;
-                const topic = classEntry.querySelector('.topic').value;
-                const students = classEntry.querySelector('.students').value;
-                const faculty = classEntry.querySelector('.faculty').value;
-
-                if (!startTime || !endTime || !course || !subject || !topic || !students || !faculty) {
-                    alert(`Please fill in all fields for Class ${index + 1}!`);
-                    allFieldsFilled = false;
-                    return;
-                }
-
-                const duration = calculateDuration(startTime, endTime);
-                
-                report += `Time: ${formatTime(startTime)}- ${formatTime(endTime)}\n`;
-                report += `Duration: ${duration} mins\n`;
-                report += `Course: ${course}\n`;
-                report += `Subject: ${subject}\n`;
-                report += `Topic: ${topic}\n`;
-                report += `Faculty: ${faculty}\n`;
-                report += `Students Present: ${students}\n`;
-                report += '_____________________________\n';
-            });
-
-            if (!allFieldsFilled) {
-                return false;
-            }
-
-            document.getElementById('reportOutput').textContent = report;
-            document.getElementById('outputSection').style.display = 'block';
-            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
-            return report;
-        }
-
-        function generateAndShare() {
-            const report = generateReport();
-            if (report) {
-                shareOnWhatsApp();
-            }
-        }
-
-        function shareOnWhatsApp() {
-            const reportText = document.getElementById('reportOutput').textContent;
-            if (!reportText) {
-                alert('Please generate a report first!');
-                return;
-            }
-
-            // Encode the text for URL
-            const encodedText = encodeURIComponent(reportText);
-            
-            // Detect device type more accurately
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const isTablet = /iPad|Android(?!.*Mobile)/i.test(navigator.userAgent);
-            const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-            
-            // Determine which WhatsApp to open
-            let whatsappUrl;
-            
-            if (isMobile && !isTablet) {
-                // Mobile phone - open WhatsApp app
-                whatsappUrl = `whatsapp://send?text=${encodedText}`;
-                
-                // Try to open app, fallback to web after timeout
-                window.location.href = whatsappUrl;
-                
-                // Fallback to web WhatsApp if app doesn't open
-                setTimeout(() => {
-                    if (document.hidden === false) {
-                        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
-                    }
-                }, 1500);
-            } else {
-                // Desktop/Laptop/Tablet - open WhatsApp Web
-                whatsappUrl = `https://web.whatsapp.com/send?text=${encodedText}`;
-                window.open(whatsappUrl, '_blank');
-            }
-            
-            // Show confirmation
-            const notification = document.getElementById('copyNotification');
-            notification.textContent = isMobile && !isTablet ? '✓ Opening WhatsApp App...' : '✓ Opening WhatsApp Web...';
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 2500);
-        }
-
-        function copyReport() {
-            const reportText = document.getElementById('reportOutput').textContent;
-            navigator.clipboard.writeText(reportText).then(() => {
-                const notification = document.getElementById('copyNotification');
-                notification.classList.add('show');
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 3000);
-            }).catch(err => {
-                alert('Failed to copy to clipboard');
-            });
-        }
-
-        function clearAll() {
-            if (confirm('Are you sure you want to clear all classes?')) {
-                document.getElementById('classesContainer').innerHTML = '';
-                document.getElementById('outputSection').style.display = 'none';
-                classCount = 0;
-            }
-        }
-
-        // Add initial class entry
-        addClassEntry();
     </script>
 </body>
 </html>
